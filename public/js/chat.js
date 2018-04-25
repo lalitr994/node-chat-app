@@ -20,10 +20,30 @@ function scrollToBottom(){
 
 socket.on('connect', function () {
     console.log('Connected to server');
+    var params = jQuery.deparam(window.location.search);
+    console.log('params are'+JSON.stringify(params));
+    socket.emit('join', params, function(err){
+        if(err){
+            alert(err);
+            window.location.href ='/';
+        }else{
+            console.log('No error');
+        }
+    })
 });
 
 socket.on('disconnect', function () {
     console.log('Disconnected from server');
+});
+
+socket.on('updateUsersList', function(users){
+    var ol = jQuery('<ol></ol>');
+
+    users.forEach(function (user){
+        ol.append(jQuery('<li></li>').text(user));
+    });
+
+    jQuery('#users').html(ol);
 });
 
 socket.on('newMessage', function (message) {
@@ -45,14 +65,6 @@ socket.on('newMessage', function (message) {
 })
 
 socket.on('newLocationMessage', function(message){
-    // var formmatedTime = moment(message.createdAt).format('h:mm a')
-    // var li = jQuery('<li></li>');
-    // var a = jQuery('<a target ="_blank"> My Current Location</a>');
-    // li.text(`${message.from} ${formmatedTime} :` );
-    // a.attr('href', message.url);
-    // li.append(a);
-    // jQuery('#messages').append(li);
-
     var formmatedTime = moment(message.createdAt).format('h:mm a')
     var template = jQuery('#location-message-template').html();
     var html = Mustache.render(template, {
